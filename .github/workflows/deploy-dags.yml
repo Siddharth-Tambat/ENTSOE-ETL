@@ -1,0 +1,30 @@
+name: Deploy Airflow DAGs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy-dags:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/entsoe_actions
+          chmod 600 ~/.ssh/entsoe_actions
+
+      - name: Add VM to known_hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync DAGs to VM
+        run: |
+          rsync -avz --delete -e "ssh -i ~/.ssh/entsoe_actions -o StrictHostKeyChecking=no" \
+            ./dags/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/termi/airflow/dags/
