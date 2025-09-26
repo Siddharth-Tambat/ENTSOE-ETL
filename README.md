@@ -23,13 +23,13 @@ The Transparency Platform exposes this data via a **public API** (XML-based, IEC
 - Day-ahead and Intraday prices  
 - Balancing data: including **Volumes and Prices of Contracted Reserves**  
 
-🔑 Access to the API requires registering for an **ENTSO-E Transparency API Key** [(get *securityToken*)](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token).
-
+🔑 Access to the API requires an **ENTSO-E Transparency API Key** [(get *securityToken*)](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token).
+📜 [API Documentation](https://transparencyplatform.zendesk.com/hc/en-us/articles/15692855254548-Sitemap-for-Restful-API-Integration)
 ---
 
 ## 2. Architecture Overview
 
-- **Orchestration**: [Apache Airflow](https://airflow.apache.org/) (running in Docker on an Azure VM)  
+- **Orchestration**: [Apache Airflow] [(running in Docker)](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)
 - **Data Source**: ENTSO-E Transparency API (XML responses)  
 - **Processing**: Python + Pandas (parsing XML into DataFrames)  
 - **Data Store**: Azure Database for PostgreSQL  
