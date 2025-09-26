@@ -87,4 +87,25 @@ entsoe-etl/
 
 1. Clone the repository:
 ```bash
-
+git clone https://github.com/Siddharth-Tambat/entsoe-etl.git
+cd entsoe-etl
+```
+2. Ensure Airflow is running in Docker and DAGs are mounted in the dags/ folder.
+3. In Airflow:
+ - Add Variable: entsoe-api-key = <your_api_key>
+ - Add Connections:
+   * entsoe_pg → Postgres
+   * azure_data_lake → ADLS Gen2
+4. Create the Postgres schemas using the sql/schema.sql
+5. Trigger the DAG:
+```bash
+   airflow dags trigger germany_bnc_reserves
+```
+6. Backfill historical data:
+```bash
+docker exec -it airflow-airflow-scheduler-1 bash
+airflow dags backfill \
+  -s {from_date} \
+  -e {to_date} \
+  germany_bnc_reserves
+```
