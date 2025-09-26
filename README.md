@@ -37,19 +37,14 @@ This project implements a full ETL (Extract → Transform → Load) pipeline to 
 ## 3. Folder Structure
 
 entsoe-etl/
-│
 ├── dags/
 │ ├── germany_bnc_reserves.py # Main Airflow DAG
 │ └── bnc_parser.py # XML parsing logic
-│
 ├── .github/
 │ └── workflows/
 │ └── deploy_dags.yml # CI/CD workflow for DAG sync
-│
 ├── sql/
 │ └── schema.sql # Postgres schema for germany_bnc_reserves
-│
 ├── docs/
 │ └── README.md # Project documentation
-│
 └── requirements.txt # Python dependencies
