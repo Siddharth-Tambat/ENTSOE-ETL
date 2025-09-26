@@ -34,7 +34,13 @@ This project implements a full ETL (Extract → Transform → Load) pipeline to 
 
 ---
 
-## 3. Folder Structure
+## 3. 🚀 How to Set Up and Run the ETL Pipeline
+
+
+
+---
+
+## 4. Folder Structure
 
 ```bash
 entsoe-etl/
