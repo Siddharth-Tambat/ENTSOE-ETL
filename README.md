@@ -6,13 +6,15 @@ Automated data pipeline to extract, transform, and load ENTSO‑E API data into 
 
 ## Table of Contents
 - Introduction
+- Features
 - Architecture
-- Project Setup
+- Prerequisites
 - Folder Structure
+- Setup and Run
 
 ---
 
-## 1. Introduction to ENTSO-E and its API
+## 1. Introduction
 
 [ENTSO-E (European Network of Transmission System Operators for Electricity)](https://www.entsoe.eu/) is the official body of European transmission operators.  
 They operate the **Transparency Platform**, which provides open data on electricity markets, transmission, generation, consumption, balancing, and reserves.  
@@ -22,14 +24,22 @@ The Transparency Platform exposes this data via a **public API** (XML-based, IEC
 - Load, Generation, and Transmission data  
 - Day-ahead and Intraday prices  
 - Balancing data: including **Volumes and Prices of Contracted Reserves**  
-
-- 🔑 Access to the API requires an **ENTSO-E Transparency API Key** [(get *securityToken*)](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token)
+- 🔑 Access to the API requires an **ENTSO-E Transparency API Key** 
 - 📜 [API Documentation](https://transparencyplatform.zendesk.com/hc/en-us/articles/15692855254548-Sitemap-for-Restful-API-Integration)
+  
+---
+## 2. Features
+
+- Scheduled, on‑demand and backfill runs with Apache Airflow.
+- XML parsing tailored for ENTSO‑E API responses.
+- Indexed Postgres schema for fast queries.
+- Partitioned Parquet in Data Lake for analytics and ML forecasting.
+
 ---
 
-## 2. Architecture Overview
+## 3. Architecture
 
-- **Orchestration**: [Apache Airflow] [(running in Docker)](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)
+- **Orchestration**: [Apache Airflow] 
 - **Data Source**: ENTSO-E Transparency API (XML responses)  
 - **Processing**: Python + Pandas (parsing XML into DataFrames)  
 - **Data Store**: Azure Database for PostgreSQL  
@@ -40,13 +50,16 @@ The Transparency Platform exposes this data via a **public API** (XML-based, IEC
 
 ---
 
-## 3. 🚀 How to Set Up and Run the ETL Pipeline
+## 4. Prerequisites
 
-
+- ENTOS-E API Key [(get *securityToken*)](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token)
+- An Airflow deployment [(running in Docker)](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html)
+- Azure Postgres instance and credentials
+- Azure Data Lake Storage Gen2 account and credentials
 
 ---
 
-## 4. Folder Structure
+## 5. Folder Structure
 
 ```bash
 entsoe-etl/
@@ -67,3 +80,11 @@ entsoe-etl/
 │
 └── requirements.txt               # Python dependencies
 ```
+
+ ---
+
+ ## 6. 🚀 Setup and Run
+
+1. Clone the repository:
+```bash
+
