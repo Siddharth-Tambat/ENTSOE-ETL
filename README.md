@@ -1,4 +1,4 @@
-# ⚡ ENTSO-E API ETL Pipeline
+# ⚡ ENTSO-E ETL Pipeline
 
 Automated data pipeline to extract, transform, and load ENTSO‑E API data into Azure Postgres DB and Azure Data Lake Storage Gen2, orchestrated with Apache Airflow.
 
