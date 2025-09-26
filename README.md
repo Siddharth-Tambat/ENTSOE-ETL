@@ -1,5 +1,15 @@
 # ⚡ ENTSO-E API ETL Pipeline
 
+Automated data pipeline to extract, transform, and load ENTSO‑E API data into Azure Postgres DB and Azure Data Lake Storage Gen2, orchestrated with Apache Airflow.
+
+---
+
+## Table of Contents
+- Introduction
+- Architecture
+- Project Setup
+- Folder Structure
+
 ---
 
 ## 1. Introduction to ENTSO-E and its API
@@ -17,11 +27,7 @@ The Transparency Platform exposes this data via a **public API** (XML-based, IEC
 
 ---
 
-## 2. ETL Flow and Tech Stack
-
-This project implements a full ETL (Extract → Transform → Load) pipeline to fetch balancing reserves data for **Germany** from ENTSO-E and load it into cloud storage + databases for analytics.
-
-### Architecture Overview
+## 2. Architecture Overview
 
 - **Orchestration**: [Apache Airflow](https://airflow.apache.org/) (running in Docker on an Azure VM)  
 - **Data Source**: ENTSO-E Transparency API (XML responses)  
