@@ -1,6 +1,7 @@
 from airflow.decorators import dag, task
 from airflow.models import Variable
-from airflow.sdk import get_current_context
+#from airflow.sdk import get_current_context  # airflow >3
+from airflow.operators.python import get_current_context  # airflow=2.7.1
 from airflow.providers.microsoft.azure.hooks.wasb import WasbHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
