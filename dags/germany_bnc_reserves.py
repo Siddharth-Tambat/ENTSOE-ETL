@@ -197,7 +197,7 @@ def germany_bnc_reserves():
         df.to_parquet(load_path, engine="pyarrow", index=False)
 
         blob_name = (
-            f"bnc_reserves/year={year}/month={month}/day={day}/region=DE/bnc_reserves.parquet"
+            f"bnc_reserves/year={year}/month={month}/day={day}/region=DE/data.parquet"
         )
 
         # Upload to ADLS
