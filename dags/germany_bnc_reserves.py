@@ -8,6 +8,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 import os
 import requests
 import pandas as pd
+from typing import Optional
 from datetime import datetime, timedelta
 from psycopg2.extras import execute_values
 
@@ -174,7 +175,7 @@ def germany_bnc_reserves():
         return None
 
     @task
-    def upload_to_adls(process_result: dict) -> str | None:
+    def upload_to_adls(process_result: dict) -> Optional[str]:
         """
         Save the processed DataFrame as a Parquet file and upload
         to Azure Data Lake Storage in a partitioned path.
