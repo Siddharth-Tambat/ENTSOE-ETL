@@ -25,7 +25,7 @@ In this Project we'll be extracting data from the below two API for Germany regi
 - Day-ahead and Intraday prices  
 - Balancing data: including **Volumes and Prices of Contracted Reserves**
 
-Important Info
+Important Info:
 - 🔑 Access to the API requires an **ENTSO-E Transparency API Key** 
 - 📜 [API Documentation](https://transparencyplatform.zendesk.com/hc/en-us/articles/15692855254548-Sitemap-for-Restful-API-Integration)
   
