@@ -39,7 +39,7 @@ The Transparency Platform exposes this data via a **public API** (XML-based, IEC
 
 ## 3. Architecture
 
-- **Orchestration**: [Apache Airflow] 
+- **Orchestration**: [Apache Airflow](https://airflow.apache.org/)
 - **Data Source**: ENTSO-E Transparency API (XML responses)  
 - **Processing**: Python + Pandas (parsing XML into DataFrames)  
 - **Data Store**: Azure Database for PostgreSQL  
