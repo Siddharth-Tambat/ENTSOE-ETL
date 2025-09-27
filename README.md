@@ -68,8 +68,11 @@ Important Info:
 entsoe-etl/
 │
 ├── dags/
-│   ├── germany_bnc_reserves.py    # Main Airflow DAG
+│   ├── germany_bnc_reserves.py    # BNC Airflow DAG
 │   └── bnc_parser.py              # XML parsing logic
+│   └── germany_energy_prices.py   # Energy Prices DAG
+│   └── energy_prices_parser.py    # XML parsing logic
+│   └── __init__.py    
 │
 ├── .github/
 │   └── workflows/
@@ -79,9 +82,13 @@ entsoe-etl/
 │   └── schema.sql                 # Postgres schema for germany_bnc_reserves
 │
 ├── docs/
-│   └── README.md                  # Project documentation
+│   └── pipeline_architecture.png
+│   └── airflow_dag_graph.png
+│   └── airflow_calendar.png
+│   └── synapse_analytics.png
+│   └── postgres_db.png
 │
-└── requirements.txt               # Python dependencies
+└── README.md                       # Project documentation
 ```
 
  ---
