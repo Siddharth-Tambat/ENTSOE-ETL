@@ -43,7 +43,7 @@ PROCESS_TYPE_MAP = {
 }
 
 # Helper functions
-def _ns_q(ns, tag: str):
+def _ns_q(ns, tag: str) -> str:
     """Return qualified tag name for ElementTree (handles default namespace)."""
     return f"{{{ns}}}{tag}" if ns else tag
 
@@ -64,7 +64,7 @@ def _parse_iso_duration_to_timedelta(res: str) -> timedelta:
     return timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
 
-def _get_text(elem, ns, *tag_variants):
+def _get_text(elem, ns, *tag_variants) -> str | None:
     """Return first non-none text for given tag variants (handles dot chars)."""
     for tag in tag_variants:
         found = elem.find(_ns_q(ns, tag))
@@ -158,13 +158,11 @@ def parse_balancing_market_document(xml_bytes_or_str) -> pd.DataFrame:
                 position = int(pos_text) if pos_text is not None else None
             except Exception:
                 position = None
-
-            # if position missing, fallback to index in list
             if position is None:
-                # compute index by list index + 1 (position is 1-based)
-                # this is less ideal; only used if position tag absent
+                # fallback to index in list
                 position = point_elems.index(p) + 1
 
+            # Calculate interval start and end
             interval_start = period_start_ts + timedelta(seconds=delta.total_seconds() * (position - 1))
             interval_end = interval_start + delta
 
@@ -192,6 +190,7 @@ def parse_balancing_market_document(xml_bytes_or_str) -> pd.DataFrame:
             market_agreement_type = MARKET_AGREEMENT_TYPE_MAP.get(market_agreement_type_code, None)
             process_type = PROCESS_TYPE_MAP.get(process_type_code, None)
 
+            # point-level values
             rows.append({
                 "document_mrid": document_mrid,
                 "process_type_code": process_type_code,
@@ -237,4 +236,4 @@ def parse_balancing_market_document(xml_bytes_or_str) -> pd.DataFrame:
     df["quantity"] = pd.to_numeric(df["quantity"], errors="coerce")
     df["procurement_price"] = pd.to_numeric(df["procurement_price"], errors="coerce")
 
-    return df
+    return df.drop_duplicates()  # dedupe just in case
