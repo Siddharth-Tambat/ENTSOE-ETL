@@ -42,7 +42,7 @@ API_KEY = Variable.get("entsoe-api-key")
     description="Fetch ENTSO-E balancing reserves volumes and prices for Germany (all reserve types)",
     schedule="@daily",  # Run once per day
     start_date=datetime(2024, 1, 1),
-    max_active_runs=3,
+    max_active_runs=5,
     catchup=False,
     default_args={
         "owner": "termi",
