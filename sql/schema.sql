@@ -43,3 +43,33 @@ CREATE INDEX idx_bnc_interval_time
 -- Speeds up aggregations by reserve/process type
 CREATE INDEX idx_bnc_reserve_type
     ON entsoe.public.germany_bnc_reserves (process_type_code, flow_direction_code);
+
+
+-- DDL to create table for Germany Energy Prices data
+CREATE TABLE entsoe.public.germany_energy_prices (
+    document_mrid TEXT,
+    created_datetime TIMESTAMPTZ,
+    series_mrid TEXT,
+    classification_sequence TEXT,
+    contract_type TEXT,
+    curve_type_code VARCHAR(10),
+    curve_type TEXT,
+    area_domain VARCHAR(32) NOT NULL,
+    in_domain VARCHAR(32),
+    out_domain VARCHAR(32),
+    currency VARCHAR(10),
+    price_unit VARCHAR(10),
+    resolution VARCHAR(20) NOT NULL,      -- e.g. PT15M, PT60M
+    position INT,
+    price NUMERIC,
+    interval_start TIMESTAMPTZ NOT NULL,
+    interval_end TIMESTAMPTZ,
+    period_start TIMESTAMPTZ,
+    period_end TIMESTAMPTZ,
+    ingestion_time TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (area_domain, resolution, interval_start, document_mrid)
+);
+
+-- Speeds up time-series range queries
+CREATE INDEX idx_energy_prices_interval_time
+    ON entsoe.public.germany_energy_prices (interval_start, interval_end);
