@@ -11,12 +11,14 @@ import pandas as pd
 from datetime import datetime, timedelta
 from psycopg2.extras import execute_values
 
-
 from bnc_parser import parse_balancing_market_document
 
-# Germany API Config
-BASE_URL = "https://web-api.tp.entsoe.eu/api"
 
+# Constants
+BASE_URL = "https://web-api.tp.entsoe.eu/api"
+API_KEY = Variable.get("entsoe-api-key")
+
+# Germany control areas
 DE_CONTROL_AREAS = [
     "10YDE-VE-------2",
     "10YDE-RWENET---I",
@@ -34,9 +36,7 @@ PROCESS_TYPES = {
     "A46": "RR",
 }
 
-API_KEY = Variable.get("entsoe-api-key")
-
-
+# DAG definition
 @dag(
     dag_id="germany_bnc_reserves",
     description="Fetch ENTSO-E balancing reserves volumes and prices for Germany (all reserve types)",
@@ -55,8 +55,8 @@ API_KEY = Variable.get("entsoe-api-key")
 def germany_bnc_reserves():
 
     @task
-    def fetch_entsoe_data(fetch_date: str = None):
-        """Fetch balancing reserves data for each German control area and reserve type"""
+    def fetch_entsoe_data(fetch_date: str = None) -> dict:
+        """Fetch balancing reserves data for each German control area and reserve type for yesterday."""
 
          # Prefer explicit fetch_date if passed, otherwise use the DAG run context 'ds'
         if fetch_date is None:
@@ -67,7 +67,6 @@ def germany_bnc_reserves():
                 # fallback to yesterday UTC (safe default if something is unexpectedly missing)
                 fetch_date = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
 
-        # parse fetch_date into periodStart/periodEnd as before
         dt = datetime.strptime(fetch_date, "%Y-%m-%d")
         period_start = dt.strftime("%Y%m%d0000")
         period_end = dt.strftime("%Y%m%d2300")
@@ -86,30 +85,27 @@ def germany_bnc_reserves():
                     "periodStart": period_start,
                     "periodEnd": period_end,
                 }
-                response = requests.get(BASE_URL, params=params)
+                response = requests.get(BASE_URL, params=params, timeout=60)
 
                 if response.status_code == 200:
-                    print(f"✅ Success for {domain}, {reserve_name}")
+                    print(f"✅ API Success for domain: {domain}, reserve: {reserve_name}, fetch_date {fetch_date}")
                     results.append({
                         "xml": response.text,
                         "reserve_type": reserve_name,
                         "domain": domain,
                     })
                 else:
-                    print(
-                        f"❌ Failed for {domain}, {reserve_name} "
-                        f"({response.status_code}) - {response.text}"
-                    )
+                    print( f"❌ API Failed for domain: {domain}, reserve: {reserve_name}, fetch_date: {fetch_date}")
+                    print(f"error: ({response.status_code}) - {response.text}")
 
         return {"results": results, "fetch_date": fetch_date}
 
     @task
-    def process_data(fetch_result: dict):
-        """Process and store the fetched data into ADLS with partitioned directories"""
+    def process_data(fetch_result: dict) -> dict:
+        """Process XML results into a single DataFrame."""
 
         results = fetch_result["results"]
         fetch_date = fetch_result["fetch_date"]
-
         final_df = pd.DataFrame()
 
         for item in results:
@@ -127,16 +123,16 @@ def germany_bnc_reserves():
         return {"final_df": final_df, "fetch_date": fetch_date}
 
     @task
-    def upload_to_postgres(process_result: dict):
+    def upload_to_postgres(process_result: dict) -> None:
         """
-        Upsert parsed CSV into Postgres (table entsoe.germany_bnc_reserves).
+        Upsert parsed CSV into Postgres (table entsoe.public.germany_bnc_reserves).
         Assumes the table & indexes already exist.
         """
         df = process_result["final_df"]
 
         if df is None or df.empty:
             print("⚠️ No data to upload to Postgres.")
-            return
+            return None
 
         pg_hook = PostgresHook(postgres_conn_id="azure_postgres")
         conn = pg_hook.get_conn()
@@ -175,10 +171,10 @@ def germany_bnc_reserves():
             cur.close()
             conn.close()
 
-        return
+        return None
 
     @task
-    def upload_to_adls(process_result: dict):
+    def upload_to_adls(process_result: dict) -> str | None:
         """
         Save the processed DataFrame as a Parquet file and upload
         to Azure Data Lake Storage in a partitioned path.
@@ -191,7 +187,7 @@ def germany_bnc_reserves():
             print("⚠️ No data to upload to ADLS.")
             return None
 
-        # Partition path: year=YYYY/month=MM/day=DD/
+        # Partition path: year=YYYY/month=MM/day=DD/region=DE/
         dt = datetime.strptime(fetch_date, "%Y-%m-%d")
         year, month, day = dt.strftime("%Y"), dt.strftime("%m"), dt.strftime("%d")
 
@@ -200,7 +196,7 @@ def germany_bnc_reserves():
         df.to_parquet(load_path, engine="pyarrow", index=False)
 
         blob_name = (
-            f"bnc_reserves/year={year}/month={month}/day={day}/region=DE/data.parquet"
+            f"bnc_reserves/year={year}/month={month}/day={day}/region=DE/bnc_reserves.parquet"
         )
 
         # Upload to ADLS
@@ -217,24 +213,23 @@ def germany_bnc_reserves():
         return load_path
     
     @task
-    def cleanup_local_file(load_path: str):
+    def cleanup_local_file(load_path: str) -> None:
         """Delete the local CSV file after upload to ADLS"""
 
         if load_path and os.path.exists(load_path):
             os.remove(load_path)
             print(f"🗑️ Deleted local file {load_path}")
 
+        return None
 
     # Orchestration
     fetch_result = fetch_entsoe_data()
     process_result = process_data(fetch_result)
-
     # Run in parallel
     upload_to_postgres(process_result)
     load_path = upload_to_adls(process_result)
-
+    # Cleanup
     cleanup_local_file(load_path) << load_path
-
 
 # Instantiate the DAG
 dag = germany_bnc_reserves()
