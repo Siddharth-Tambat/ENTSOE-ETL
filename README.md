@@ -19,11 +19,13 @@ Automated data pipeline to extract, transform, and load ENTSO‑E API data into 
 [ENTSO-E (European Network of Transmission System Operators for Electricity)](https://www.entsoe.eu/) is the official body of European transmission operators.  
 They operate the **Transparency Platform**, which provides open data on electricity markets, transmission, generation, consumption, balancing, and reserves.  
 
-The Transparency Platform exposes this data via a **public API** (XML-based, IEC-CIM standard), which includes datasets like:
+The Transparency Platform exposes this data via a **public API** (XML-based, IEC-CIM standard), which includes datasets like - Load, Generation, and Transmission data
+In this Project we'll be extracting data from the below two API for Germany region:
 
-- Load, Generation, and Transmission data  
 - Day-ahead and Intraday prices  
-- Balancing data: including **Volumes and Prices of Contracted Reserves**  
+- Balancing data: including **Volumes and Prices of Contracted Reserves**
+
+Important Info
 - 🔑 Access to the API requires an **ENTSO-E Transparency API Key** 
 - 📜 [API Documentation](https://transparencyplatform.zendesk.com/hc/en-us/articles/15692855254548-Sitemap-for-Restful-API-Integration)
   
