@@ -2,6 +2,7 @@ import re
 from datetime import timedelta
 import xml.etree.ElementTree as ET
 import pandas as pd
+from typing import Optional
 
 
 # Constants for mapping codes to descriptions
@@ -64,7 +65,7 @@ def _parse_iso_duration_to_timedelta(res: str) -> timedelta:
     return timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
 
-def _get_text(elem, ns, *tag_variants) -> str | None:
+def _get_text(elem, ns, *tag_variants) -> Optional[str]:
     """Return first non-none text for given tag variants (handles dot chars)."""
     for tag in tag_variants:
         found = elem.find(_ns_q(ns, tag))
