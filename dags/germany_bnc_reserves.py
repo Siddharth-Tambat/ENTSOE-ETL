@@ -47,7 +47,7 @@ API_KEY = Variable.get("entsoe-api-key")
     default_args={
         "owner": "termi",
         "depends_on_past": False,
-        "retries": 1,
+        "retries": 2,
         "retry_delay": timedelta(minutes=5),
     },
     tags=["entsoe", "balancing", "germany"],
