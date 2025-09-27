@@ -11,6 +11,7 @@ Automated data pipeline to extract, transform, and load ENTSO‑E API data into 
 - Prerequisites
 - Folder Structure
 - Setup and Run
+- Visuals
 
 ---
 
@@ -111,3 +112,25 @@ airflow dags backfill \
   -e {to_date} \
   germany_bnc_reserves
 ```
+
+---
+
+## 7. Visuals
+
+### Pipeline Architecture
+![Pipeline architecture](docs/pipeline_architecture.png)
+
+### Airflow Views
+<p float="left">
+  <img src="docs/airflow_dag_graph.png" alt="Airflow DAG graph" width="49%" />
+  <img src="docs/airflow_calendar.png" alt="Airflow calendar" width="49%" />
+</p>
+
+### Postgres DB
+![Postgres DB](docs/postgres_db.png)
+
+### Storage and Analytics
+<p float="left">
+  <img src="docs/adls2.png" alt="ADLS2 layout" width="49%" />
+  <img src="docs/synapse_analytics.png" alt="Synapse Analytics view" width="49%" />
+</p>
