@@ -40,7 +40,7 @@ API_KEY = Variable.get("entsoe-api-key")
 @dag(
     dag_id="germany_bnc_reserves",
     description="Fetch ENTSO-E balancing reserves volumes and prices for Germany (all reserve types)",
-    schedule="@daily",  # Run once per day
+    schedule="0 1 * * *",
     start_date=datetime(2024, 1, 1),
     max_active_runs=5,
     catchup=False,
