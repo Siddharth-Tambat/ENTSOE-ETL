@@ -21,6 +21,7 @@ Automated data pipeline to extract, transform, and load ENTSO‑E API data into 
 They operate the **Transparency Platform**, which provides open data on electricity markets, transmission, generation, consumption, balancing, and reserves.  
 
 The Transparency Platform exposes this data via a **public API** (XML-based, IEC-CIM standard), which includes datasets like - Load, Generation, and Transmission data.
+
 In this Project we'll be extracting data from the below two API for Germany region:
 
 - Day-ahead and Intraday prices  
