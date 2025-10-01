@@ -53,6 +53,7 @@ def germany_energy_prices():
         if fetch_date is None:
             ctx = get_current_context()
             fetch_date = ctx.get("ds")  # YYYY-MM-DD
+            print(f"fetch_date from context: {fetch_date}")
             if fetch_date is None:
                 fetch_date = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
 
