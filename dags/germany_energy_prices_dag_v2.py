@@ -6,18 +6,11 @@ from airflow.providers.microsoft.azure.hooks.wasb import WasbHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 import os
-import requests
-import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 from typing import Optional
-from datetime import datetime, timedelta
-from psycopg2.extras import execute_values
+from datetime import datetime, timedelta, timezone
 
-from energy_prices_parser import parse_energy_prices_document
-
-
-# Constants
-BASE_URL = "https://web-api.tp.entsoe.eu/api"
-API_KEY = Variable.get("entsoe-api-key")
 
 # Germany in out domains
 DE_BIDDING_ZONES = [
@@ -33,32 +26,44 @@ DE_BIDDING_ZONES = [
     description="Fetch ENTSO-E Day-ahead prices (A44) for Germany domains and write to Postgres + ADLS",
     schedule="0 1 * * *",
     start_date=datetime(2024, 1, 1),
-    max_active_runs=5,
+    max_active_runs=8,
     catchup=False,
     default_args={
         "owner": "termi",
         "depends_on_past": False,
-        "retries": 1,
-        "retry_delay": timedelta(minutes=5),
+        "retries": 3,
+        "retry_delay": timedelta(minutes=5)
     },
-    tags=["entsoe", "day-ahead", "germany"],
+    tags=["entsoe", "day-ahead", "germany", "v2"],
 )
 def germany_energy_prices():
 
-    @task
+    @task(
+            retries=3,
+            retry_delay=timedelta(minutes=5),
+            retry_exponential_backoff=True,
+            max_retry_delay=timedelta(minutes=30),
+            retry_jitter=True # Adds random variation to retry intervals
+    )
     def fetch_entsoe_data(fetch_date: str = None) -> dict:
         """
         Fetch ENTSO-E energy day-ahead prices for Germany for the given date (default: yesterday).
         """
+        import requests
+
         if fetch_date is None:
             ctx = get_current_context()
             fetch_date = ctx.get("ds")  # YYYY-MM-DD
             if fetch_date is None:
-                fetch_date = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+                logger.info("fetch_date not found in current context, falling back to UTC yesterday")
+                fetch_date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
 
         dt = datetime.strptime(fetch_date, "%Y-%m-%d")
         period_start = dt.strftime("%Y%m%d0000")
         period_end = dt.strftime("%Y%m%d0000")
+
+        BASE_URL = "https://web-api.tp.entsoe.eu/api"
+        API_KEY = Variable.get("entsoe-api-key")
 
         results = []
 
@@ -89,6 +94,9 @@ def germany_energy_prices():
     def process_data(fetch_result: dict) -> dict:
         """Process XML results into a single DataFrame."""
 
+        import pandas as pd
+        from energy_prices_parser import parse_energy_prices_document
+
         results = fetch_result["results"]
         fetch_date = fetch_result["fetch_date"]
         final_df = pd.DataFrame()
@@ -110,6 +118,8 @@ def germany_energy_prices():
         Upsert parsed CSV into Postgres (table entsoe.public.germany_energy_prices).
         Assumes the table & indexes already exist.
         """
+        from psycopg2.extras import execute_values
+
         df = process_result["final_df"]
 
         if df is None or df.empty:
