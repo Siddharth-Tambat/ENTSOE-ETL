@@ -51,8 +51,64 @@ def expected_points(start_ts: pd.Timestamp, end_ts: pd.Timestamp, resolution_str
     return expected_points
 
 
+def enforce_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """Enforce schema on the DataFrame."""
+    expected_columns = {
+        "curve_type_code": "string",
+        "area_domain": "string",
+        "currency": "string",
+        "price_unit": "string",
+        "resolution": "string",
+        "position": "Int32",
+        "price": "numeric",
+        "interval_start": "datetime64[ns, UTC]",
+        "interval_end": "datetime64[ns, UTC]"
+    }
+
+    for col, dtype in expected_columns.items():
+        if col not in df.columns:
+            logger.error(f"Missing expected column: {col}")
+            raise AirflowException(f"Missing expected column: {col}")
+        try:
+            if col == "price":
+                df[col] = pd.to_numeric(df[col], errors='raise')
+            else:
+                df[col] = df[col].astype(dtype)
+        except Exception as e:
+            logger.error(f"Error converting column {col} to {dtype}: {e}")
+            raise AirflowException(f"Error converting column {col} to {dtype}: {e}")
+
+    return df
+
+
+def deduplicate_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Deduplicate rows in the DataFrame based on primary key columns."""
+    key_columns = ["area_domain", "resolution", "interval_start"]
+    before_count = len(df)
+    df = df.drop_duplicates(subset=key_columns, keep='first').reset_index(drop=True)
+    after_count = len(df)
+    if before_count != after_count:
+        logger.info(f"Deduplicated {before_count - after_count} rows.")
+    return df
+
+
+def dq_check(df: pd.DataFrame) -> bool:
+    """Perform data quality checks on the DataFrame."""
+    if df.empty:
+        logger.error("DataFrame is empty after parsing.")
+        return False
+
+    key_columns = ["area_domain", "resolution", "interval_start"]
+    for col in key_columns:
+        if df[col].isnull().any():
+            logger.error(f"Null values found in primary key column: {col}")
+            return False
+
+    return True
+
+
 # Main Parsing Function
-def energy_prices_document(xml) -> pd.DataFrame:
+def energy_prices_parser(xml) -> pd.DataFrame:
     """
     Parse ENTSOE A44 / day-ahead prices XML and return a DataFrame with one row per Point.
     """
@@ -142,7 +198,13 @@ def energy_prices_document(xml) -> pd.DataFrame:
     if not rows:
         logger.warning("No valid data points found in the XML document.")
         raise AirflowException("No valid data points found in the XML document.")
-    print(rows)
+    
     df = pd.DataFrame(rows)
+    df = enforce_schema(df)
+    df = deduplicate_rows(df)
 
+    if not dq_check(df):
+        logger.error("Data quality checks failed.")
+        raise AirflowException("Data quality checks failed.")
+    
     return df
