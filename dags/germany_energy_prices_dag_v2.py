@@ -42,8 +42,7 @@ def germany_energy_prices():
             retries=3,
             retry_delay=timedelta(minutes=5),
             retry_exponential_backoff=True,
-            max_retry_delay=timedelta(minutes=30),
-            retry_jitter=True # Adds random variation to retry intervals
+            max_retry_delay=timedelta(minutes=30)
     )
     def fetch_entsoe_data(fetch_date: str = None) -> dict:
         """
