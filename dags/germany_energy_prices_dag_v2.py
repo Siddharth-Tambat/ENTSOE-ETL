@@ -22,7 +22,7 @@ DE_BIDDING_ZONES = [
 
 # DAG definition
 @dag(
-    dag_id="germany_energy_prices",
+    dag_id="germany_energy_prices_v2",
     description="Fetch ENTSO-E Day-ahead prices (A44) for Germany domains and write to Postgres + ADLS",
     schedule="0 1 * * *",
     start_date=datetime(2024, 1, 1),
@@ -36,7 +36,7 @@ DE_BIDDING_ZONES = [
     },
     tags=["entsoe", "day-ahead", "germany", "v2"],
 )
-def germany_energy_prices():
+def germany_energy_prices_v2():
 
     @task(
             retries=3,
@@ -214,7 +214,7 @@ def germany_energy_prices():
 
         # Write Parquet to a temporary location -> ADLS
         with tempfile.NamedTemporaryFile(suffix=".parquet") as temp_file:
-            
+
             try:
                 table = pa.Table.from_pandas(
                     df, 
@@ -252,4 +252,4 @@ def germany_energy_prices():
 
 
 # Instantiate the DAG
-dag = germany_energy_prices()
+dag = germany_energy_prices_v2()
